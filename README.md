@@ -12,9 +12,7 @@ image. This project focuses on classifying the pixels of images taken from drone
 
 ## Data
 
-The project uses a dataset of 3269 images taken by drones with annotated masks for 12 classes (including the background).
-
-The 12 classes are the following:
+The project uses a dataset of 3269 images taken by drones with annotated masks for the following 12 classes:
 - background
 - person
 - bike
@@ -32,7 +30,7 @@ The 12 classes are the following:
 ## The method used
 
 Fine-tuning of a DeepLabV3 ResNet-101 pre-trained model using a custom PyTorch training loop. The objective was to learn
-how to manually implement all the required steps.
+how to manually implement all the required steps, particularly the ones of the training loop.
 
 - The dataset was split using a stratified shuffle split scheme into train and validation subsets with 80% and 20% of the 
 available data, respectively. The stratification was done based on the presence or not of a class in each image. 
@@ -40,7 +38,7 @@ available data, respectively. The stratification was done based on the presence 
 - Various augmentations techniques were used to try to improve generalization.
 
 - The loss function used was an equally weighted combination of the Focal Loss and the Soft Dice Loss:
-  - The Focal Loss is used to focus learning on hard negative examples. It's a modification of the Cross-Entropy loss.
+  - The Focal Loss is a modification of the Cross-Entropy loss focused on learning from hard negative examples.
   - The Soft Dice Loss is effective in addressing the challenge of imbalanced foreground and background regions.
 
 - An SGD optimizer using the setup used by the YOLOv5 training script, where three parameter groups are defined for 
@@ -49,10 +47,18 @@ different weight decay configurations.
 - A learning rate scheduler that implements the 1-cycle policy. It adjusts the learning rate from an initial rate to a 
 maximum, then decreases it to a much lower minimum.
 
+- A custom training loop that includes:
+    - updating the optimizer learning rate by using a LR scheduler
+    - gradient accumulation
+    - evaluation on the validation set
+    - tracking of training losses and scores
+    - tracking of validation losses and scores
+    - tracking of per-class scores
+
 
 ## Discussion
 
-Training this model for 65 epochs resulted in a Dice Score of `0.59310`.
+Training this model for 80 epochs resulted in a Dice Score of `0.59310`.
 
 Further improvements to the data splitting process could incorporate the pixel count for each class in every image, 
 so that the images are distributed in a way that considers the occurrence of each class, weighted by the size of 
