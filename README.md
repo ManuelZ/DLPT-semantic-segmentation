@@ -12,7 +12,8 @@ image. This project focuses on classifying the pixels of images taken from drone
 
 ## Data
 
-The project uses a dataset of 3269 images taken by drones with annotated masks for the following 12 classes:
+The project uses a dataset of 3269 images of size 1280(W) x 720(H), taken by drones, and annotated image masks for 
+the following 12 classes:
 - background
 - person
 - bike
