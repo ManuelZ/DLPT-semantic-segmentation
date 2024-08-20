@@ -40,7 +40,7 @@ different weight decay configurations.
 - A learning rate scheduler that implements the 1-cycle policy. It adjusts the learning rate from an initial rate to a 
 maximum, then decreases it to a much lower minimum.
 
-- A custom training loop that includes:
+- The custom training loop includes:
     - updating the optimizer learning rate by using a LR scheduler
     - gradient accumulation
     - evaluation on the validation set
