@@ -104,7 +104,7 @@ def plot(x, ys: list, labels: list, title: str):
     return fig, ax
 
 
-def plot_loss_and_score(epochs, H):
+def plot_loss_and_score(H, epochs):
     """ """
 
     x = [i for i in range(1, epochs + 1)]
