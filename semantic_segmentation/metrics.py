@@ -22,11 +22,11 @@ class DiceScore(torch.nn.Module):
         self.metric.update(pred.flatten(), target.flatten())
         conf_matrix = self.metric.compute()
 
-        if self.ignore_indices is not None:
+        if self.ignore_index is not None:
             # set column values of ignore classes to 0
-            conf_matrix[:, self.ignore_indices] = 0
+            conf_matrix[:, self.ignore_index] = 0
             # set row values of ignore classes to 0
-            conf_matrix[self.ignore_indices, :] = 0
+            conf_matrix[self.ignore_index, :] = 0
 
         true_positive = torch.diag(conf_matrix)
         false_positive = torch.sum(conf_matrix, 0) - true_positive
