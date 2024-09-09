@@ -186,6 +186,7 @@ def calculate_class_weights(pixel_count_per_class):
 
 
 def count_pixels_per_class(images_ids, datapath, num_classes):
+    """ """
 
     pixel_count_per_class = np.zeros(num_classes)
 
@@ -215,6 +216,7 @@ def count_images_per_class(dataset):
 
 def prepare_for_prediction(image_path, transforms, device):
     """ """
+
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image = transforms(image=image)["image"]

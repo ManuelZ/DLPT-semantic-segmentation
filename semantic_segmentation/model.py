@@ -3,6 +3,8 @@ from torchvision import models
 
 
 def make_model(num_classes, device):
+    """ """
+
     model = models.segmentation.deeplabv3_resnet101(
         weights="DeepLabV3_ResNet101_Weights.DEFAULT", progress=True
     )

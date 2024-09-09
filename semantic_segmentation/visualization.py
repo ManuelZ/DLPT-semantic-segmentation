@@ -48,6 +48,7 @@ def draw_image_mask_prediction(image, ax, mask=None, pred=None, is_cv_im=False):
 
 def draw_batch(dataset, n_samples=3):
     """ """
+
     fig, axes = plt.subplots(
         nrows=n_samples, ncols=2, sharey=True, figsize=(10, 3 * n_samples)
     )
@@ -62,6 +63,7 @@ def draw_batch(dataset, n_samples=3):
 
 def bar_plot(x, y, xlabel, ylabel, title):
     """ """
+
     plt.figure(figsize=(10, 6))
     plt.bar(x, y, color="skyblue")
     plt.xticks(rotation=45)
@@ -156,6 +158,7 @@ def plot_score_per_class(H, num_classes):
 
 def visualize_classes(dataset, num_classes):
     """ """
+
     image, mask = dataset[0]
     fig, axes = plt.subplots(
         nrows=np.ceil(num_classes // 3).astype(np.uint8),
