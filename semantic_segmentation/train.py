@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 import numpy as np
 from tqdm.autonotebook import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 
 def main(
@@ -32,11 +33,13 @@ def main(
     }
     best_score = 0
 
+    writer = SummaryWriter()
+
     for e in range(0, epochs):
 
         print("\n[INFO] EPOCH: {}/{}".format(e + 1, epochs))
 
-        avg_train_loss, avg_train_score = train(
+        train_loss, train_score = train(
             model,
             optimizer,
             scheduler,
@@ -48,35 +51,41 @@ def main(
             device,
         )
 
-        avg_valid_loss, avg_valid_score, avg_per_class_score = test(
+        valid_loss, valid_score, avg_per_class_score = test(
             model, loss_fun, scorer, valid_dataloader, batch_size, device
         )
 
-        H["train_loss"].append(avg_train_loss)
-        H["valid_loss"].append(avg_valid_loss)
-        H["train_score"].append(avg_train_score)
-        H["valid_score"].append(avg_valid_score)
+        writer.add_scalar("Loss/train", train_loss, e)
+        writer.add_scalar("Loss/val", valid_loss, e)
+
+        writer.add_scalar("Score/train", train_score, e)
+        writer.add_scalar("Score/val", valid_score, e)
+
+        H["train_loss"].append(train_loss)
+        H["valid_loss"].append(valid_loss)
+        H["train_score"].append(train_score)
+        H["valid_score"].append(valid_score)
         H["per_class_score"].append(avg_per_class_score)
 
         print(
             "Epoch train loss: {:.6f} | Epoch train mean Dice score: {:.4f}".format(
-                avg_train_loss, avg_train_score
+                train_loss, train_score
             )
         )
         print(
             "Epoch valid loss: {:.6f} | Epoch valid mean Dice score: {:.4f}".format(
-                avg_valid_loss, avg_valid_score
+                valid_loss, valid_score
             )
         )
 
-        if avg_valid_score > best_score:
-            best_score = avg_valid_score
+        if valid_score > best_score:
+            best_score = valid_score
             print(f"New best valid mean Dice score: {best_score:.4f} at epoch {e+1}")
-            output_file_path = os.path.join(output_path, f"deeplabv3_best_model.pt")
 
             if not Path(output_path).exists():
                 Path(output_path).mkdir(parents=True, exist_ok=True)
 
+            output_file_path = os.path.join(output_path, f"deeplabv3_best_model.pt")
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
@@ -84,13 +93,6 @@ def main(
                 },
                 output_file_path,
             )
-
-        # Serialize the model every 5 epochs
-        if (e + 1) % 5 == 0:
-            output_file_path = os.path.join(
-                output_path, f"deeplabv3_model_epoch_{e+1}.pkl"
-            )
-            torch.save(model, output_file_path)
 
     return H
 
