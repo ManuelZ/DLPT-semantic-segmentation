@@ -1,5 +1,6 @@
 # Standard Library imports
 import os
+from pathlib import Path
 
 # External imports
 import torch
@@ -71,7 +72,11 @@ def main(
         if avg_valid_score > best_score:
             best_score = avg_valid_score
             print(f"New best valid mean Dice score: {best_score:.4f} at epoch {e+1}")
-            output_file_path = os.path.join(output_path, f"deeplabv3_best_model.pkl")
+            output_file_path = os.path.join(output_path, f"deeplabv3_best_model.pt")
+
+            if not Path(output_path).exists():
+                Path(output_path).mkdir(parents=True, exist_ok=True)
+
             torch.save(
                 {
                     "model_state_dict": model.state_dict(),
