@@ -1,0 +1,8 @@
+pandas
+opencv-python-headless
+albumentations
+torch-lr-finder
+segmentation-models-pytorch
+pytorch_toolbelt
+iterative-stratification
+torcheval
