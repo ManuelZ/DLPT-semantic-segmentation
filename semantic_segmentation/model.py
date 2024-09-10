@@ -31,6 +31,6 @@ def unfreeze_resnet101_backbone(model, layers: list[str] | None = None):
     else:  # Unfreeze only certain specified layers
         for layer in layers:
             assert layer in resnet101_layers, f"Layer {layer} isn't part of Resnet101"
-            for param in model.backbone.getattr(layer).parameters():
+            for param in getattr(model.backbone, layer).parameters():
                 param.requires_grad = True
             print(f"Unfreezing parameters of layer {layer}")
