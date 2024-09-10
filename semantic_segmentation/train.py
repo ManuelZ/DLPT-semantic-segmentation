@@ -17,6 +17,7 @@ def main(
     scorer,
     train_dataloader,
     valid_dataloader,
+    starting_epoch,
     epochs,
     output_path,
     grad_accum_steps,
@@ -35,7 +36,7 @@ def main(
 
     writer = SummaryWriter()
 
-    for e in range(0, epochs):
+    for e in range(starting_epoch, epochs):
 
         print("\n[INFO] EPOCH: {}/{}".format(e + 1, epochs))
 
