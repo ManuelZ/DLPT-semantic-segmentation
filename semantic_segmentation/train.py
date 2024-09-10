@@ -23,6 +23,7 @@ def main(
     grad_accum_steps,
     batch_size,
     device,
+    use_aux=False,
 ):
 
     H = {
@@ -50,6 +51,7 @@ def main(
             grad_accum_steps,
             batch_size,
             device,
+            use_aux,
         )
 
         valid_loss, valid_score, avg_per_class_score = test(
@@ -108,6 +110,7 @@ def train(
     grad_accum_steps,
     batch_size,
     device,
+    use_aux=False,
 ):
     """ """
 
@@ -127,9 +130,17 @@ def train(
         output = model(x)
 
         pred_logits = output["out"]
+        if use_aux:
+            aux_loss = output["aux"]
+
         loss = loss_fun(pred_logits, y)
+
         # For en explanation of this, see "MLOps Engineering at Scale-Manning (2022), Ch 8.1.3"
         loss /= grad_accum_steps
+        if use_aux:
+            aux_loss /= grad_accum_steps
+            loss += aux_loss
+
         epoch_loss += loss.item()
         loss.backward()
 
