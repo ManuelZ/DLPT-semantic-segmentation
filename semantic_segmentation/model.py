@@ -19,25 +19,18 @@ def make_model(num_classes, device):
     return model.to(device)
 
 
-def unfreeze_deeplabv3(model, layers=None):
+def unfreeze_resnet101_backbone(model, layers: list[str] | None = None):
+    """ """
 
+    resnet101_layers = ["layer1", "layer2", "layer3", "layer4"]
+
+    # Unfreeze whole backbone
     if layers is None:
-        # Unfreeze whole backbone
-        for name, param in model.named_parameters():
+        for param in model.parameters():
             param.requires_grad = True
-    else:
-        print("To be done")
-        pass
-
-    # Set the last backbone layers to be trainable
-    # for param in model.backbone.layer4.parameters():
-    #     param.requires_grad = True
-
-    # for param in model.backbone.layer3.parameters():
-    #     param.requires_grad = True
-
-    # for param in model.backbone.layer2.parameters():
-    #     param.requires_grad = True
-
-    # for param in model.backbone.layer1.parameters():
-    #     param.requires_grad = True
+    else:  # Unfreeze only certain specified layers
+        for layer in layers:
+            assert layer in resnet101_layers, f"Layer {layer} isn't part of Resnet101"
+            for param in model.backbone.getattr(layer).parameters():
+                param.requires_grad = True
+            print(f"Unfreezing parameters of layer {layer}")
