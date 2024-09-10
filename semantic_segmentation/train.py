@@ -113,26 +113,26 @@ def train(
 
     model.train()
 
-    train_steps = len(dataloader.dataset) // batch_size
-    train_prog_bar = tqdm(dataloader, total=train_steps)
     epoch_loss = 0
     epoch_score = 0
+
+    num_steps = len(dataloader.dataset) // batch_size
+    train_prog_bar = tqdm(dataloader, total=num_steps)
     for batch_index, (x, y) in enumerate(train_prog_bar):
 
         x = x.to(device, dtype=torch.float32)
         y = y.squeeze()
         y = y.to(device, dtype=torch.long)
 
-        pred_logits = model(x)["out"]
+        output = model(x)
 
-        # Train loss
-        train_loss = loss_fun(pred_logits, y)
+        pred_logits = output["out"]
+        loss = loss_fun(pred_logits, y)
         # For en explanation of this, see "MLOps Engineering at Scale-Manning (2022), Ch 8.1.3"
-        train_loss = train_loss / grad_accum_steps
-        epoch_loss += train_loss.item()
-        train_loss.backward()
+        loss /= grad_accum_steps
+        epoch_loss += loss.item()
+        loss.backward()
 
-        # Train score
         pred_probs = pred_logits.softmax(dim=1)
         max_indices = pred_probs.argmax(dim=1)
         train_score = scorer(max_indices, y)
@@ -152,12 +152,12 @@ def train(
             optimizer.zero_grad()  # TODO: test passing set_to_none=True
 
         train_prog_bar.set_description(
-            desc=f"Training loss: {train_loss.item():.4f} | Mean Dice score: {float(train_score.mean()):.2f}"
+            desc=f"Training loss: {loss.item():.4f} | Mean Dice score: {float(train_score.mean()):.2f}"
         )
 
     # Average train metrics during the epoch
-    avg_train_loss = epoch_loss / train_steps
-    avg_train_score = epoch_score / train_steps
+    avg_train_loss = epoch_loss / num_steps
+    avg_train_score = epoch_score / num_steps
 
     return avg_train_loss, avg_train_score
 
@@ -171,8 +171,8 @@ def test(model, loss_fun, scorer, dataloader, batch_size, device):
     model.eval()
     with torch.no_grad():
 
-        valid_steps = len(dataloader.dataset) // batch_size
-        valid_prog_bar = tqdm(dataloader, total=valid_steps)
+        num_steps = len(dataloader.dataset) // batch_size
+        valid_prog_bar = tqdm(dataloader, total=num_steps)
         for x, y in valid_prog_bar:
             x = x.to(device, dtype=torch.float32)
             y = y.squeeze()
@@ -180,8 +180,8 @@ def test(model, loss_fun, scorer, dataloader, batch_size, device):
 
             # Validation loss
             pred_logits = model(x)["out"]
-            valid_loss = loss_fun(pred_logits, y)
-            epoch_loss += valid_loss.item()
+            loss = loss_fun(pred_logits, y)
+            epoch_loss += loss.item()
 
             # Validation score
             pred_probs = pred_logits.softmax(dim=1)
@@ -193,13 +193,13 @@ def test(model, loss_fun, scorer, dataloader, batch_size, device):
             per_class_score.append(valid_score.reshape(1, -1))
 
             valid_prog_bar.set_description(
-                desc=f"Validation loss: {valid_loss.item():.4f} | Mean Dice score: {float(valid_score.mean()):.2f}"
+                desc=f"Validation loss: {loss.item():.4f} | Mean Dice score: {float(valid_score.mean()):.2f}"
             )
 
         # Average validation metrics during the epoch
-        avg_valid_loss = epoch_loss / valid_steps
-        avg_valid_score = epoch_score / valid_steps
+        avg_valid_loss = epoch_loss / num_steps
+        avg_valid_score = epoch_score / num_steps
         avg_per_class_score = (
-            np.concatenate(per_class_score, axis=0).sum(axis=0) / valid_steps
+            np.concatenate(per_class_score, axis=0).sum(axis=0) / num_steps
         )
     return avg_valid_loss, avg_valid_score, avg_per_class_score
