@@ -56,7 +56,7 @@ class ClearCache:
         gc.collect()
 
 
-def torch_to_cv2(image, is_mask=False):
+def torch_to_cv2(image: torch.Tensor, is_mask=False) -> np.ndarray:
     """
     Convert a PyTorch image tensor to an OpenCV image.
     Do not use on masks. Masks have to go from 3 dim (including batch) to 2 dim (no batch dim)
