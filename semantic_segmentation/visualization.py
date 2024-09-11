@@ -1,8 +1,10 @@
 # External imports
-import numpy as np
+import torch
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
+from tqdm import tqdm
 
 # Local imports
 from semantic_segmentation.utils import (
@@ -10,6 +12,7 @@ from semantic_segmentation.utils import (
     denormalize,
     MASK_CLASS_COLORS,
     LABELS_NAMES_MAP,
+    get_prediction,
 )
 
 
@@ -178,3 +181,35 @@ def visualize_classes(dataset, num_classes):
     plt.tight_layout()
     plt.show()
     plt.close(fig)
+
+
+def draw_predictions(model, dataset, num_predictions, include_mask, device):
+    """ """
+
+    ncols = 3 if include_mask else 2
+    fig, ax = plt.subplots(
+        nrows=num_predictions,
+        ncols=ncols,
+        sharey=True,
+        figsize=(10, 3 * num_predictions),
+    )  # w, h
+
+    model.eval()
+    with torch.no_grad():
+        for i, element in enumerate(tqdm(dataset)):
+
+            if i == num_predictions:
+                break
+
+            if include_mask:
+                image, mask = element
+            else:
+                image, mask = element, None
+
+            pred = get_prediction(model, image, device)
+            draw_image_mask_prediction(
+                image, ax[i], mask=mask, pred=pred, is_cv_im=False
+            )
+
+    plt.tight_layout()
+    plt.show()

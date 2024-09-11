@@ -224,3 +224,12 @@ def prepare_for_prediction(image_path, transforms, device):
     image = image.unsqueeze(0)
 
     return image
+
+
+def get_prediction(model, image, device):
+    """ """
+    image = image.to(device, dtype=torch.float32)
+    image = image.unsqueeze(0)
+    pred = model(image)["out"]
+    pred = pred.argmax(dim=1)
+    return pred
