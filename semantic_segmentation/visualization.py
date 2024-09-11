@@ -16,7 +16,14 @@ from semantic_segmentation.utils import (
 )
 
 
-def draw_image_mask_prediction(image, ax, mask=None, pred=None, is_cv_im=False):
+def draw_image_mask_prediction(
+    image,
+    ax,
+    mask=None,
+    pred=None,
+    is_cv_im=False,
+    titles=("Image", "Ground truth mask", "Prediction"),
+):
     """ """
 
     if not is_cv_im:
@@ -24,27 +31,27 @@ def draw_image_mask_prediction(image, ax, mask=None, pred=None, is_cv_im=False):
         image = torch_to_cv2(image)
 
     if mask is not None:
-        mask = torch_to_cv2(mask, is_mask=True)
+        mask = torch_to_cv2(mask, is_mask=True) if not is_cv_im else mask
         mask = MASK_CLASS_COLORS[mask]
 
     if pred is not None:
-        pred = torch_to_cv2(pred, is_mask=True)
+        pred = torch_to_cv2(pred, is_mask=True) if not is_cv_im else pred
         pred = MASK_CLASS_COLORS[pred]
 
     ax[0].imshow(image)
-    ax[0].set_xlabel("Image")
+    ax[0].set_xlabel(titles[0])
     ax[0].set_xticks([])
     ax[0].set_yticks([])
 
     if mask is not None:
         ax[1].imshow(mask)
-        ax[1].set_xlabel("Ground truth mask")
+        ax[1].set_xlabel(titles[1])
         ax[1].set_xticks([])
         ax[1].set_yticks([])
 
     if pred is not None:
         ax[-1].imshow(pred)
-        ax[-1].set_xlabel("Prediction")
+        ax[-1].set_xlabel(titles[2])
         ax[-1].set_xticks([])
         ax[-1].set_yticks([])
 
