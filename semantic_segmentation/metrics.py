@@ -1,5 +1,6 @@
 import torch
 from torcheval.metrics import MulticlassConfusionMatrix
+import segmentation_models_pytorch as smp
 
 
 class DiceScore(torch.nn.Module):
@@ -37,3 +38,16 @@ class DiceScore(torch.nn.Module):
         )
 
         return DSC
+
+
+class IOU(torch.nn.Module):
+    def __init__(self, num_classes):
+        super().__init__()
+        self.num_classes = num_classes
+
+    def __call__(self, pred, target):
+        tp, fp, fn, tn = smp.metrics.get_stats(
+            pred, target, mode="multiclass", num_classes=self.num_classes
+        )
+        iou_score = smp.metrics.iou_score(tp, fp, fn, tn, reduction=None)
+        return iou_score
