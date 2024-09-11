@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from tqdm import tqdm
+from pytorch_toolbelt.utils.rle import rle_encode, rle_to_string, rle_decode
+
 
 # Local imports
 from semantic_segmentation.utils import (
@@ -220,3 +222,38 @@ def draw_predictions(model, dataset, num_predictions, include_mask, device):
 
     plt.tight_layout()
     plt.show()
+
+
+def visualize_rle_encoding_decoding(
+    image: torch.Tensor,
+    mask: torch.Tensor,
+    num_classes: int,
+    titles: tuple[str, ...],
+):
+    """
+    Visually verify that the RLE encoding works by encoding and decoding a mask.
+    """
+
+    fig, axes = plt.subplots(
+        nrows=num_classes, ncols=3, sharey=True, figsize=(15, 3 * num_classes)
+    )
+
+    image = denormalize(image)
+    image_numpy = torch_to_cv2(image)
+    mask_numpy = torch_to_cv2(mask, is_mask=True)
+    for class_id in range(num_classes):
+        class_image = np.zeros_like(mask_numpy)
+        class_image[mask_numpy == class_id] = 1
+
+        encoded_mask = rle_encode(class_image)
+        rle_string = rle_to_string(encoded_mask)
+        reconstructed_mask = rle_decode(rle_string, mask_numpy.shape, np.uint8)
+
+        draw_image_mask_prediction(
+            image_numpy,
+            axes[class_id],
+            mask=mask_numpy,
+            pred=reconstructed_mask,
+            is_cv_im=True,
+            titles=titles,
+        )
