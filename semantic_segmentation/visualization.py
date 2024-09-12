@@ -242,17 +242,20 @@ def visualize_rle_encoding_decoding(
     image_numpy = torch_to_cv2(image)
     mask_numpy = torch_to_cv2(mask, is_mask=True)
     for class_id in range(num_classes):
-        class_image = np.zeros_like(mask_numpy)
-        class_image[mask_numpy == class_id] = 1
 
-        encoded_mask = rle_encode(class_image)
+        # Keep mask of only one class
+        class_mask = np.zeros_like(mask_numpy)
+        class_mask[mask_numpy == class_id] = 1
+
+        # Encode and then decode the class mask
+        encoded_mask = rle_encode(class_mask)
         rle_string = rle_to_string(encoded_mask)
         reconstructed_mask = rle_decode(rle_string, mask_numpy.shape, np.uint8)
 
         draw_image_mask_prediction(
             image_numpy,
             axes[class_id],
-            mask=mask_numpy,
+            mask=class_mask,
             pred=reconstructed_mask,
             is_cv_im=True,
             titles=titles,
