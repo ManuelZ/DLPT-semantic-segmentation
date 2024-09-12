@@ -169,7 +169,15 @@ def extract_best_lr(lr_finder):
 
 
 def calculate_class_weights(pixel_count_per_class):
-    """ """
+    """
+    Prepare class weights for BCE loss based on pixel counts, giving higher importance to classes
+    with fewer pixels.
+
+        loss_fun = torch.nn.CrossEntropyLoss(
+            weight=torch.from_numpy(class_weights).to(torch.float32)
+        )
+
+    """
 
     total_pixels = np.sum(pixel_count_per_class)
     pixel_proportion_per_class = pixel_count_per_class / total_pixels
