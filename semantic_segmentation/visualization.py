@@ -73,10 +73,10 @@ def draw_batch(dataset, n_samples=3):
     plt.close(fig)
 
 
-def bar_plot(x, y, xlabel, ylabel, title):
+def bar_plot(x, y, xlabel="", ylabel="", title="", figsize=(10, 6)):
     """ """
 
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=figsize)
     plt.bar(x, y, color="skyblue")
     plt.xticks(rotation=45)
     plt.xlabel(xlabel)
