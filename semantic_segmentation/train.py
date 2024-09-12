@@ -37,67 +37,71 @@ def main(
 
     writer = SummaryWriter()
 
-    for e in range(starting_epoch, epochs):
+    try:
+        for e in range(starting_epoch, epochs):
 
-        print("\n[INFO] EPOCH: {}/{}".format(e + 1, epochs))
+            print("\n[INFO] EPOCH: {}/{}".format(e + 1, epochs))
 
-        train_loss, train_score = train(
-            model,
-            optimizer,
-            scheduler,
-            loss_fun,
-            scorer,
-            train_dataloader,
-            grad_accum_steps,
-            batch_size,
-            device,
-            use_aux,
-        )
-
-        valid_loss, valid_score, avg_per_class_score = test(
-            model, loss_fun, scorer, valid_dataloader, batch_size, device
-        )
-
-        writer.add_scalar("Loss/train", train_loss, e)
-        writer.add_scalar("Loss/val", valid_loss, e)
-
-        writer.add_scalar("Score/train", train_score, e)
-        writer.add_scalar("Score/val", valid_score, e)
-
-        H["train_loss"].append(train_loss)
-        H["valid_loss"].append(valid_loss)
-        H["train_score"].append(train_score)
-        H["valid_score"].append(valid_score)
-        H["per_class_score"].append(avg_per_class_score)
-
-        print(
-            "Epoch train loss: {:.6f} | Epoch train mean Dice score: {:.4f}".format(
-                train_loss, train_score
-            )
-        )
-        print(
-            "Epoch valid loss: {:.6f} | Epoch valid mean Dice score: {:.4f}".format(
-                valid_loss, valid_score
-            )
-        )
-
-        if valid_score > best_score:
-            best_score = valid_score
-            print(f"New best valid mean Dice score: {best_score:.4f} at epoch {e+1}")
-
-            if not Path(output_path).exists():
-                Path(output_path).mkdir(parents=True, exist_ok=True)
-
-            output_file_path = os.path.join(output_path, f"deeplabv3_best_model.pt")
-            torch.save(
-                {
-                    "model_state_dict": model.state_dict(),
-                    "optimizer_state_dict": optimizer.state_dict(),
-                },
-                output_file_path,
+            train_loss, train_score = train(
+                model,
+                optimizer,
+                scheduler,
+                loss_fun,
+                scorer,
+                train_dataloader,
+                grad_accum_steps,
+                batch_size,
+                device,
+                use_aux,
             )
 
-    return H
+            valid_loss, valid_score, avg_per_class_score = validate(
+                model, loss_fun, scorer, valid_dataloader, batch_size, device
+            )
+
+            writer.add_scalar("Loss/train", train_loss, e)
+            writer.add_scalar("Loss/val", valid_loss, e)
+
+            writer.add_scalar("Score/train", train_score, e)
+            writer.add_scalar("Score/val", valid_score, e)
+
+            H["train_loss"].append(train_loss)
+            H["valid_loss"].append(valid_loss)
+            H["train_score"].append(train_score)
+            H["valid_score"].append(valid_score)
+            H["per_class_score"].append(avg_per_class_score)
+
+            print(
+                "Epoch train loss: {:.6f} | Epoch train score: {:.4f}".format(
+                    train_loss, train_score
+                )
+            )
+            print(
+                "Epoch valid loss: {:.6f} | Epoch valid score: {:.4f}".format(
+                    valid_loss, valid_score
+                )
+            )
+
+            if valid_score > best_score:
+                best_score = valid_score
+                print(f"New best valid score: {best_score:.4f} at epoch {e+1}")
+
+                if not Path(output_path).exists():
+                    Path(output_path).mkdir(parents=True, exist_ok=True)
+
+                output_file_path = os.path.join(output_path, f"deeplabv3_best_model.pt")
+                torch.save(
+                    {
+                        "model_state_dict": model.state_dict(),
+                        "optimizer_state_dict": optimizer.state_dict(),
+                    },
+                    output_file_path,
+                )
+    except KeyboardInterrupt:
+        print("Interrupted! Returning output up to this point.")
+
+    finally:
+        return H
 
 
 def train(
